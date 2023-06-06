@@ -42,13 +42,25 @@ function handleFindByIdItemError(req, res, err) {
     .send({ message: "An error has occurred on the server.", err });
 }
 
-const getItems = (req, res) => {
+const createItem = (req, res) => {
+  console.log("HERE", req.body.imageUrl);
+  const { name, weather, imageUrl } = req.body;
+
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.send({ data: item });
     })
     .catch((err) => {
-      handleItemErrorCatch(req, res, err);
+      console.error(err);
+      handleRegularItemError(req, res, err);
+    });
+};
+
+const getItems = (req, res) => {
+  ClothingItem.find({})
+    .then((items) => res.send(items))
+    .catch((err) => {
+      handleRegularItemError(req, res, err);
     });
 };
 

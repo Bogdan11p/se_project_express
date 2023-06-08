@@ -1,4 +1,4 @@
-const User = require("../models/users");
+const User = require("../models/user");
 const { ERROR_400, ERROR_404, ERROR_500 } = require("../utils/errors");
 
 function handleErrorCatch(res, err) {

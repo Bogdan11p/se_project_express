@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 
 const { PORT = 3001 } = process.env;
 
+const routes = require("./routes");
+
 const app = express();
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
@@ -13,6 +15,8 @@ mongoose
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);
   });
+
+app.use(routes);
 
 app.use((req, res, next) => {
   req.user = {

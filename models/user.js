@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
-const user = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Field required"],
@@ -18,4 +18,4 @@ const user = new mongoose.Schema({
   },
 });
 
-model.exports = mongoose.model("user", user);
+model.exports = mongoose.model("user", userSchema);

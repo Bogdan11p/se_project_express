@@ -1,5 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
-const { ERROR_400, ERROR_404, ERROR_500 } = require("../utils/errors");
+/* const { ERROR_400, ERROR_404, ERROR_500 } = require("../utils/errors");
 
 function handleItemErrorCatch(res, err) {
   if (err.name === "ValidationError" || err.name === "AssertionError") {
@@ -41,18 +41,21 @@ function handleFindByIdItemError(req, res, err) {
     .status(ERROR_500)
     .send({ message: "An error has occurred on the server.", err });
 }
-
+ */
 const createItem = (req, res) => {
-  console.log("HERE", req.body.imageUrl);
+  console.log(req);
+  console.log(req.body);
+
   const { name, weather, imageUrl } = req.body;
 
-  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
+  ClothingItem.create({ name, weather, imageUrl })
     .then((item) => {
+      console.log(item);
       res.send({ data: item });
     })
-    .catch((err) => {
-      console.error(err);
-      handleRegularItemError(req, res, err);
+    .catch((e) => {
+      console.error(e);
+      res.status(500).send({ message: "Error from createItem", e });
     });
 };
 
@@ -106,7 +109,7 @@ const likeItem = (req, res) => {
     });
 };
 
-function disLikeItem(req, res) {
+function dislikeItem(req, res) {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -126,5 +129,5 @@ module.exports = {
   updateItem,
   deleteItem,
   likeItem,
-  disLikeItem,
+  dislikeItem,
 };

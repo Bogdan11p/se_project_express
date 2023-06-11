@@ -1,30 +1,11 @@
 const User = require("../models/user");
-const { ERROR_400, ERROR_404, ERROR_500 } = require("../utils/errors");
-
-function handleErrorCatch(res, err) {
-  if (err.name === "ValidationError" || err.name === "AssertionError") {
-    return res.status(ERROR_400).send({
-      message:
-        "invalid data passed to the methods for creating a user, or invalid ID passed to the params",
-    });
-  }
-  if (err.name === "CastError") {
-    return res.status(ERROR_400).send({
-      message:
-        "There is no user with the requested id, or the request was sent to a non-existent address.",
-    });
-  }
-  return res.status(ERROR_500).send({
-    message: "An error has occurred on the server.",
-    err,
-  });
-}
+const { regularUserError, findByIdUserError } = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
     .catch((err) => {
-      handleErrorCatch(res, err);
+      regularUserError(req, res, err);
     });
 };
 
@@ -35,26 +16,7 @@ const getUser = (req, res) => {
     .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      console.log(err.name);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(ERROR_404).send({
-          message:
-            "There is no user with the requested id, or the request was sent to a non-existent address.",
-        });
-      }
-      if (
-        err.name === "ValidationError" ||
-        err.name === "AssertionError" ||
-        err.name === "CastError"
-      ) {
-        return res.status(ERROR_400).send({
-          message:
-            "Invalid data passed to the methods for creating a user, or invalid ID passed to the params",
-        });
-      }
-      return res
-        .status(ERROR_500)
-        .send({ message: "An error has occurred on the server.", err });
+      findByIdUserError(req, res, err);
     });
 };
 
@@ -66,7 +28,7 @@ const createUser = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      handleErrorCatch(res, err);
+      regularUserError(req, res, err);
     });
 };
 

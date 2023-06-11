@@ -20,20 +20,7 @@ const clothingItem = new mongoose.Schema({
       validator: (v) => validator.isURL(v),
       message: "Enter a valid URL",
     },
-  } /* ,
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: [true, "Field Required"],
   },
-  likes: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    default: [],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  }, */,
 });
 
 module.exports = mongoose.model("clothingItem", clothingItem);

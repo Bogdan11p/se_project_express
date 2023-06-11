@@ -1,81 +1,40 @@
 const ClothingItem = require("../models/clothingItem");
-/* const { ERROR_400, ERROR_404, ERROR_500 } = require("../utils/errors");
+const { regularItemError, findByIdItemError } = require("../utils/errors");
 
-function handleItemErrorCatch(res, err) {
-  if (err.name === "ValidationError" || err.name === "AssertionError") {
-    return res.status(ERROR_400).send({
-      message:
-        "invalid data passed to the methods for creating an item, or invalid ID passed to the params",
-    });
-  }
-  if (err.name === "CastError") {
-    return res.status(ERROR_400).send({
-      message:
-        "There is no clothing with the requested id, or the request was sent to a non-existent address.",
-    });
-  }
-  return res.status(ERROR_500).send({
-    message: "An error has occurred on the server.",
-    err,
-  });
-}
-
-function handleFindByIdItemError(req, res, err) {
-  if (
-    err.name === "CastError" ||
-    err.name === "ValidationError" ||
-    err.name === "AssertionError"
-  ) {
-    return res.status(ERROR_400).send({
-      message:
-        "invalid data passed to the methods for creating an item, or invalid ID passed to the params",
-    });
-  }
-  if (err.name === "DocumentNotFoundError") {
-    return res.status(ERROR_404).send({
-      message:
-        "There is no clothing with the requested id, or the request was sent to a non-existent address.",
-    });
-  }
-  return res
-    .status(ERROR_500)
-    .send({ message: "An error has occurred on the server.", err });
-}
- */
 const createItem = (req, res) => {
   console.log(req);
   console.log(req.body);
 
-  const { name, weather, imageUrl } = req.body;
+  const { name, weather, imageURL } = req.body;
 
-  ClothingItem.create({ name, weather, imageUrl })
+  ClothingItem.create({ name, weather, imageURL })
     .then((item) => {
       console.log(item);
       res.send({ data: item });
     })
-    .catch((e) => {
-      console.error(e);
-      res.status(500).send({ message: "Error from createItem", e });
+    .catch((err) => {
+      console.error(err);
+      regularItemError(req, res, err);
     });
 };
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.send(items))
+    .then((items) => res.status(200).send(items))
     .catch((err) => {
-      handleRegularItemError(req, res, err);
+      regularItemError(req, res, err);
     });
 };
 
 const updateItem = (req, res) => {
-  const { itemId } = req.param;
-  const { imageUrl } = req.body;
+  const { itemId } = req.params;
+  const { imageURL } = req.body;
 
-  ClothingItem.findOneAndUpdate(itemId, { $set: { imageUrl } })
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      handleItemErrorCatch(req, res, err);
+      regularItemError(req, res, err);
     });
 };
 
@@ -84,13 +43,9 @@ const deleteItem = (req, res) => {
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() =>
-      res
-        .status(200)
-        .send({ message: `The item has been successfully deleted.` })
-    )
+    .then(() => res.status(200).send({}))
     .catch((err) => {
-      handleFindByIdItemError(req, res, err);
+      findByIdItemError(req, res, err);
     });
 };
 
@@ -105,7 +60,7 @@ const likeItem = (req, res) => {
       res.status(200).send({ message: "Item has successfully been liked" })
     )
     .catch((err) => {
-      handleFindByIdItemError(req, res, err);
+      findByIdItemError(req, res, err);
     });
 };
 
@@ -116,10 +71,11 @@ function dislikeItem(req, res) {
     { new: true }
   )
     .orFail()
-    .then((item) => res.status(200).send({ data: item }))
+    .then((item) =>
+      res.status(200).send({ message: "Item has succesfully been disliked" })
+    )
     .catch((err) => {
-      console.error(err);
-      handleFindByIdItemError(req, res, err);
+      findByIdItemError(req, res, err);
     });
 }
 

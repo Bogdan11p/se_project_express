@@ -11,6 +11,13 @@ const routes = require("./routes");
 app.use(express.json());
 app.use(routes);
 
+/* app.use((req, res, next) => {
+  req.user = {
+    _id: '64858c4802d518caf1a4a541'
+  };
+  next();
+}); */
+
 app.listen(PORT, () => {
   console.log(`Server is listening on ${PORT}`);
   console.log("This is working");

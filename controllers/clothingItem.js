@@ -71,7 +71,7 @@ function dislikeItem(req, res) {
     { new: true }
   )
     .orFail()
-    .then((item) =>
+    .then(() =>
       res.status(200).send({ message: "Item has succesfully been disliked" })
     )
     .catch((err) => {

@@ -2,12 +2,12 @@ const ClothingItem = require("../models/clothingItem");
 const { regularItemError, findByIdItemError } = require("../utils/errors");
 
 const createItem = (req, res) => {
-  const { name, weather, imageURL } = req.body;
+  const { name, weather, imageUrl } = req.body;
 
-  ClothingItem.create({ name, weather, imageURL })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       console.log(item);
-      res.status(400).json({ data: item });
+      res.status(200).json({ data: item });
     })
     .catch((err) => {
       console.error(err);

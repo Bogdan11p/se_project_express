@@ -25,9 +25,9 @@ const getItems = (req, res) => {
 
 const updateItem = (req, res) => {
   const { itemId } = req.params;
-  const { imageURL } = req.body;
+  const { imageUrl } = req.body;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
@@ -40,7 +40,7 @@ const deleteItem = (req, res) => {
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() => res.status(200).send({}))
+    .then((item) => res.status(200).send({}))
     .catch((err) => {
       findByIdItemError(req, res, err);
     });

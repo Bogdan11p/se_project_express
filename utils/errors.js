@@ -59,6 +59,7 @@ const findByIdUserError = (req, res, err) => {
 };
 
 module.exports = {
+  ERROR_404,
   regularItemError,
   regularUserError,
   findByIdItemError,

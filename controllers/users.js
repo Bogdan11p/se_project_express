@@ -1,39 +1,81 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { regularUserError, findByIdUserError } = require("../utils/errors");
+const {
+  handleOnFailError,
+  handleErrorResponse,
+  errorStatusCodes,
+} = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      regularUserError(req, res, err);
-    });
-};
-
-const getUser = (req, res) => {
-  const { userId } = req.params;
-  console.log(req.params);
-  User.findById(userId)
-    .orFail()
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      findByIdUserError(req, res, err);
-    });
-};
-
-const createUser = (req, res) => {
+const updateCurrentUser = (req, res) => {
   const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
+    .orFail(handleOnFailError)
+    .then((user) => {
+      res.send(user);
+    })
+    .catch((err) => {
+      handleErrorResponse(err, res);
+    });
+};
 
-  User.create({ name, avatar })
+const getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .orFail(handleOnFailError)
     .then((user) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      regularUserError(req, res, err);
+      handleErrorResponse(req, res, err);
+    });
+};
+
+const createUser = (req, res) => {
+  const { name, avatar, email, password } = req.body;
+  console.log(name, avatar, email, password);
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
+    .then((user) => {
+      const userData = user.toObject();
+      delete userData.password;
+      res.status(201).send({ data: userData });
+    })
+    .catch((err) => {
+      handleErrorResponse(res, err);
+    });
+};
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(errorStatusCodes.unauthorized)
+      .send({ message: "You are not authorized to do this" });
+  }
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.send({ token });
+    })
+    .catch((err) => {
+      console.log(err);
+      console.log(err.name);
+      handleErrorResponse(err, res);
     });
 };
 
 module.exports = {
-  getUser,
-  getUsers,
+  getCurrentUser,
+  updateCurrentUser,
   createUser,
+  login,
 };

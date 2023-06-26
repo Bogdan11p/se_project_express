@@ -1,67 +1,44 @@
-const ERROR_400 = 400;
-const ERROR_404 = 404;
-const ERROR_500 = 500;
-
-const regularItemError = (req, res, err) => {
-  if (err.name === "ValidationError") {
-    return res.status(ERROR_400).send({
-      message: "Invalid data passed for creating or updating an item.",
-    });
-  }
-  if (err.name === "CastError") {
-    return res.status(ERROR_400).send({
-      message: "Invalid ID.",
-    });
-  }
-  return res.status(ERROR_500).send({ message: "An error has occurred" });
+const errorStatusCodes = {
+  badRequest: 400,
+  unauthorized: 401,
+  forbidden: 403,
+  notFound: 404,
+  conflict: 409,
+  internalServerError: 500,
+  mongoError: 11000,
 };
 
-const findByIdItemError = (req, res, err) => {
-  if (err.name === "CastError" || err.name === "ValidationError") {
-    return res.status(ERROR_400).send({
-      message: "Invalid data passed for creating or updating an item.",
-    });
-  }
-  if (err.name === "DocumentNotFoundError") {
-    return res.status(ERROR_404).send({
-      message: "Invalid ID.",
-    });
-  }
-  return res.status(ERROR_500).send({ message: "An error has occurred" });
+const handleOnFailError = () => {
+  const error = new Error("No item found");
+  error.statusCode = errorStatusCodes.notFound;
+  throw error;
 };
 
-const regularUserError = (req, res, err) => {
-  if (err.name === "ValidationError") {
-    return res.status(ERROR_400).send({
-      message: "Invalid data passed for creating or updating a user.",
+const handleErrorResponse = (err, res) => {
+  console.log(err);
+  if (err.name === "ValidationError" || err.name === "CastError") {
+    res
+      .status(errorStatusCodes.badRequest)
+      .send({ message: "Bad Request, Invalid input" });
+  } else if (err.message === "Incorrect email or password") {
+    res
+      .status(errorStatusCodes.unauthorized)
+      .send({ message: "You are not authorized to do this" });
+  } else if (err.statusCode === errorStatusCodes.notFound) {
+    res.status(errorStatusCodes.notFound).send({ message: "Item not found" });
+  } else if (err.code === errorStatusCodes.mongoError) {
+    res.status(errorStatusCodes.conflict).send({
+      message: "Email address is already being used, please try another email.",
     });
+  } else {
+    res
+      .status(errorStatusCodes.internalServerError)
+      .send({ message: "Something went wrong" });
   }
-  if (err.name === "CastError") {
-    return res.status(ERROR_400).send({
-      message: "Invalid ID.",
-    });
-  }
-  return res.status(ERROR_500).send({ message: "An error has occurred" });
-};
-
-const findByIdUserError = (req, res, err) => {
-  if (err.name === "CastError" || err.name === "ValidationError") {
-    return res.status(ERROR_400).send({
-      message: "Invalid data passed for creating or updating a user.",
-    });
-  }
-  if (err.name === "DocumentNotFoundError") {
-    return res.status(ERROR_404).send({
-      message: "Invalid ID.",
-    });
-  }
-  return res.status(ERROR_500).send({ message: "An error has occurred" });
 };
 
 module.exports = {
-  ERROR_404,
-  regularItemError,
-  regularUserError,
-  findByIdItemError,
-  findByIdUserError,
+  errorStatusCodes,
+  handleOnFailError,
+  handleErrorResponse,
 };

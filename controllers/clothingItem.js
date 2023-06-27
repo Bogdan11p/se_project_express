@@ -59,7 +59,7 @@ const deleteItem = (req, res) => {
         .then(() => {
           res.send({ message: "Item deleted successfully" });
         })
-        .catch(() => {
+        .catch((error) => {
           res
             .status(DEFAULT_ERROR.error)
             .send({ message: "An error has occurred on the server" });

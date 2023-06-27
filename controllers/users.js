@@ -51,6 +51,7 @@ const getCurrentUser = (req, res) => {
       }
     })
     .catch((error) => {
+      console.log(error.name);
       if (error.name === "CastError") {
         res
           .status(INVALID_DATA_ERROR.error)

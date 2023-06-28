@@ -27,6 +27,7 @@ const updateCurrentUser = (req, res) => {
       res.send({ data: user });
     })
     .catch((error) => {
+      console.error(error);
       if (error.name === "ValidationError") {
         res
           .status(INVALID_DATA_ERROR.error)
@@ -51,7 +52,7 @@ const getCurrentUser = (req, res) => {
       }
     })
     .catch((error) => {
-      console.log(error.name);
+      console.error(error);
       if (error.name === "CastError") {
         res
           .status(INVALID_DATA_ERROR.error)
@@ -79,6 +80,7 @@ const createUser = (req, res) => {
       res.send({ name, avatar, _id: user._id, email: user.email });
     })
     .catch((error) => {
+      console.error(error);
       if (error.name === "ValidationError") {
         res
           .status(INVALID_DATA_ERROR.error)
@@ -115,10 +117,11 @@ const login = (req, res) => {
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
-        res.send({ token });
+        res.send({ token, message: "The token is here" });
       });
     })
-    .catch(() => {
+    .catch((error) => {
+      console.error(error);
       res
         .status(UNAUTHORIZED_ERROR.error)
         .send({ message: "Email or Password not found" });
@@ -128,7 +131,8 @@ const login = (req, res) => {
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => {
+    .catch((error) => {
+      console.error(error);
       res
         .status(DEFAULT_ERROR.error)
         .send({ message: "An error has occured on the server" });
@@ -147,6 +151,7 @@ const getUser = (req, res) => {
       }
     })
     .catch((error) => {
+      console.error(error);
       if (error.name === "CastError") {
         res
           .status(INVALID_DATA_ERROR.error)

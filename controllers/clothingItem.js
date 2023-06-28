@@ -15,6 +15,7 @@ const createItem = (req, res) => {
       res.status(201).send({ data: item });
     })
     .catch((error) => {
+      console.error(error);
       if (error.name === "ValidationError") {
         res
           .status(INVALID_DATA_ERROR.error)
@@ -60,12 +61,14 @@ const deleteItem = (req, res) => {
           res.send({ message: "Item deleted successfully" });
         })
         .catch((error) => {
+          console.error(error);
           res
             .status(DEFAULT_ERROR.error)
             .send({ message: "An error has occurred on the server" });
         });
     })
     .catch((error) => {
+      console.error(error);
       if (error.name === "CastError") {
         return res
           .status(INVALID_DATA_ERROR.error)
@@ -95,6 +98,7 @@ const likeItem = (req, res) => {
       }
     })
     .catch((error) => {
+      console.error(error);
       if (error.name === "CastError") {
         res
           .status(INVALID_DATA_ERROR.error)
@@ -124,6 +128,7 @@ function dislikeItem(req, res) {
       }
     })
     .catch((error) => {
+      console.error(error);
       if (error.name === "CastError") {
         res
           .status(INVALID_DATA_ERROR.error)

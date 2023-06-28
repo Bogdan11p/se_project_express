@@ -10,6 +10,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db", (r) => {
 });
 
 const routes = require("./routes");
+
 app.use(cors());
 app.use(express.json());
 

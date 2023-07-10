@@ -100,9 +100,12 @@ const createUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
+  console.log({ body: req.body });
 
   User.findUserByCredentials(email, password)
     .then((user) => {
+      debugger;
+
       if (!user) {
         return res
           .status(UNAUTHORIZED_ERROR.error)

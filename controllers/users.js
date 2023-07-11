@@ -67,18 +67,14 @@ const getCurrentUser = (req, res) => {
 
 const createUser = (req, res) => {
   const { email, password, name, avatar } = req.body;
-  console.log(name, avatar, email, password);
-  if (!password) {
-    return res
-      .status(UNAUTHORIZED_ERROR.error)
-      .send({ message: "Password is required" });
-  }
 
-  return bcrypt
+  bcrypt
     .hash(password, 10)
     .then((hash) => User.create({ email, password: hash, name, avatar }))
     .then((user) => {
-      res.send({ name, avatar, _id: user._id, email: user.email });
+      const userData = user.toObject();
+      delete userData.password;
+      res.status(201).send({ data: userData });
     })
     .catch((error) => {
       console.error(error);
@@ -100,30 +96,16 @@ const createUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
-  console.log({ body: req.body });
+  console.log({ email, password });
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
-      debugger;
-
-      if (!user) {
-        return res
-          .status(UNAUTHORIZED_ERROR.error)
-          .send({ message: "Email or Password not found" });
-      }
-      return bcrypt.compare(password, user.password).then((matched) => {
-        if (!matched) {
-          res
-            .status(UNAUTHORIZED_ERROR.error)
-            .send({ message: "Email or Password not found" });
-        }
-
-        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-          expiresIn: "7d",
-        });
-        res.send({ token, message: "The token is here" });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
       });
+      res.send({ token, message: "The token is here" });
     })
+
     .catch((error) => {
       console.error(error);
       res
@@ -132,7 +114,7 @@ const login = (req, res) => {
     });
 };
 
-const getUsers = (req, res) => {
+/* const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
     .catch((error) => {
@@ -141,9 +123,9 @@ const getUsers = (req, res) => {
         .status(DEFAULT_ERROR.error)
         .send({ message: "An error has occured on the server" });
     });
-};
+}; */
 
-const getUser = (req, res) => {
+/* const getUser = (req, res) => {
   const { userId } = req.params;
 
   User.findById(userId)
@@ -166,11 +148,9 @@ const getUser = (req, res) => {
           .send({ message: "An error has occured on the server" });
       }
     });
-};
+}; */
 
 module.exports = {
-  getUser,
-  getUsers,
   getCurrentUser,
   updateCurrentUser,
   createUser,

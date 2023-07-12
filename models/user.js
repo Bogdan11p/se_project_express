@@ -11,11 +11,11 @@ const userSchema = new mongoose.Schema({
       validator: (v) => validator.isEmail(v),
       message: "Enter a valid Email",
     },
-    password: {
-      type: String,
-      required: [true, "Password is required"],
-      select: false,
-    },
+  },
+  password: {
+    type: String,
+    required: [true, "Password is required"],
+    select: false,
   },
   name: {
     type: String,
@@ -26,6 +26,8 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: [true, "Field Required"],
+    default:
+      "https://practicum-content.s3.us-west-1.amazonaws.com/software-engineer/wtwr-project/Elise.png",
     validate: {
       validator: (value) => validator.isURL(value),
       message: "Enter a valid URL",
@@ -40,6 +42,7 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
   return this.findOne({ email })
     .select("+password")
     .then((endUser) => {
+      console.log(endUser);
       if (!endUser) {
         return Promise.reject(new Error("Incorrect email or password"));
       }

@@ -73,7 +73,7 @@ const createUser = (req, res) => {
     .then((hash) => User.create({ email, password: hash, name, avatar }))
     .then((user) => {
       const userData = user.toObject();
-      delete userData.password;
+      /* delete userData.password; */
       res.status(201).send({ data: userData });
     })
     .catch((error) => {
@@ -98,7 +98,7 @@ const login = (req, res) => {
   const { email, password } = req.body;
   console.log({ email, password });
 
-  return User.findUserByCredentials(email, password)
+  User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",

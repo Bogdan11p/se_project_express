@@ -1,13 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const {
-  DEFAULT_ERROR,
-  INVALID_DATA_ERROR,
-  NOTFOUND_ERROR,
-  CONFLICT_ERROR,
-  UNAUTHORIZED_ERROR,
-} = require("../utils/errors");
+const { itemError, ERROR_409, ERROR_401 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
 const updateCurrentUser = (req, res) => {
@@ -41,28 +35,12 @@ const updateCurrentUser = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { _id: userId } = req.user;
+  const userId = req.user._id;
 
   User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "User not found" });
-      } else {
-        res.send({ data: user });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      if (error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid user ID" });
-      } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occurred on the server" });
-      }
-    });
+    .orFail()
+    .then((user) => res.send({ data: user }))
+    .catch((e) => itemError(req, res, e));
 };
 
 const createUser = (req, res) => {
@@ -76,22 +54,7 @@ const createUser = (req, res) => {
       /* delete userData.password; */
       res.status(201).send({ data: userData });
     })
-    .catch((error) => {
-      console.error(error);
-      if (error.name === "ValidationError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid data provided" });
-      } else if (error.code === 11000) {
-        res
-          .status(CONFLICT_ERROR.error)
-          .send({ message: "Email already exists in database" });
-      } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occurred on the server" });
-      }
-    });
+    .catch((error) => itemError(req, res, error));
 };
 
 const login = (req, res) => {
@@ -106,12 +69,7 @@ const login = (req, res) => {
       res.send({ token, message: "The token is here" });
     })
 
-    .catch((error) => {
-      console.error(error);
-      res
-        .status(UNAUTHORIZED_ERROR.error)
-        .send({ message: "Email or Password not found" });
-    });
+    .catch((error) => itemError(req, res, error));
 };
 
 /* const getUsers = (req, res) => {

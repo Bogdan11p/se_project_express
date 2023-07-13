@@ -1,16 +1,11 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  INVALID_DATA_ERROR,
-  NOTFOUND_ERROR,
-  DEFAULT_ERROR,
-  FORBIDDEN_ERROR,
-} = require("../utils/errors");
+const { itemError, ERROR_403 } = require("../utils/errors");
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
+  ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
       res.status(201).send({ data: item });
     })
@@ -31,114 +26,46 @@ const createItem = (req, res) => {
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch(() => {
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occured on the server" });
-    });
+    .catch((e) => itemError(req, res, e));
 };
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  const { _id: userId } = req.user;
+  const userId = req.user._id;
 
-  ClothingItem.findOne({ _id: itemId })
-    .then((item) => {
-      if (!item) {
-        return res
-          .status(NOTFOUND_ERROR.error)
-          .send({ message: "Item not found" });
+  ClothingItem.findOne(itemId)
+    .orFail()
+    .then((x) => {
+      if (x.owner.equals(userId)) {
+        return x.remove(() => res.send({ x }));
       }
-
-      if (!item.owner.equals(userId)) {
-        return res.status(FORBIDDEN_ERROR.error).send({
-          message: "Unauthorized: Only the card owner can delete it",
-        });
-      }
-
-      return ClothingItem.deleteOne({ _id: itemId, owner: userId })
-        .then(() => {
-          res.send({ message: "Item deleted successfully" });
-        })
-        .catch((error) => {
-          console.error(error);
-          res
-            .status(DEFAULT_ERROR.error)
-            .send({ message: "An error has occurred on the server" });
-        });
-    })
-    .catch((error) => {
-      console.error(error);
-      if (error.name === "CastError") {
-        return res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid item ID" });
-      }
-
       return res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occurred on the server" });
-    });
+        .status(ERROR_403)
+        .send({ message: "Not Authorized to delete" });
+    })
+    .catch((e) => itemError(req, res, e));
 };
 
 const likeItem = (req, res) => {
-  const { itemId } = req.params;
-  const { _id: userId } = req.user;
-
   ClothingItem.findByIdAndUpdate(
-    itemId,
-    { $addToSet: { likes: userId } },
+    req.params.itemsId,
+    { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .then((item) => {
-      if (!item) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
-      } else {
-        res.send({ data: item });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      if (error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid item ID" });
-      } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
-      }
-    });
+    .orFail()
+    .then((x) => res.send({ data: x }))
+    .catch((e) => itemError(req, res, e));
 };
 
 function dislikeItem(req, res) {
-  const { itemId } = req.params;
-  const { _id: userId } = req.user;
-
   ClothingItem.findByIdAndUpdate(
-    itemId,
-    { $pull: { likes: userId } },
+    req.params.itemId,
+    { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .then((item) => {
-      if (!item) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
-      } else {
-        res.send({ data: item });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      if (error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid item ID" });
-      } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
-      }
-    });
+    .orFail()
+    .then((x) => res.send({ data: x }))
+    .catch((e) => itemError(req, res, e));
 }
 
 module.exports = {

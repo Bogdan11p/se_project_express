@@ -30,10 +30,10 @@ const getItems = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.params;
+  const { itemsId } = req.params;
   const userId = req.user._id;
 
-  ClothingItem.findOne(itemId)
+  ClothingItem.findOne(itemsId)
     .orFail()
     .then((x) => {
       if (x.owner.equals(userId)) {
@@ -48,7 +48,7 @@ const deleteItem = (req, res) => {
 
 const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
-    req.params.itemsId,
+    req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
@@ -58,9 +58,11 @@ const likeItem = (req, res) => {
 };
 
 function dislikeItem(req, res) {
+  console.log(req.body);
   ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { $pull: { likes: req.user._id } },
+    req.body._id,
+
+    { $pull: { likes: req.body.user._id } },
     { new: true }
   )
     .orFail()

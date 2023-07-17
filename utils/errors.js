@@ -6,6 +6,8 @@ const ERROR_409 = 409;
 const ERROR_500 = 500;
 
 const itemError = (req, res, e) => {
+  console.log(itemError);
+
   if (e.name === "ValidationError") {
     return res.status(ERROR_400).send({ message: "Invalid Data Input" });
   }

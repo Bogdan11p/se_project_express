@@ -51,7 +51,7 @@ const createUser = (req, res) => {
     .then((hash) => User.create({ email, password: hash, name, avatar }))
     .then((user) => {
       const userData = user.toObject();
-      /* delete userData.password; */
+
       res.status(201).send({ data: userData });
     })
     .catch((error) => itemError(req, res, error));
@@ -71,42 +71,6 @@ const login = (req, res) => {
 
     .catch((error) => itemError(req, res, error));
 };
-
-/* const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch((error) => {
-      console.error(error);
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occured on the server" });
-    });
-}; */
-
-/* const getUser = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "User not found" });
-      } else {
-        res.send({ data: user });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      if (error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid user ID" });
-      } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
-      }
-    });
-}; */
 
 module.exports = {
   getCurrentUser,

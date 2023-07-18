@@ -20,7 +20,8 @@ const createItem = (req, res) => {
           .status(DEFAULT_ERROR.error)
           .send({ message: "An error has occured on the server" });
       }
-    });
+    })
+    .catch((e) => itemError(req, res, e));
 };
 
 const getItems = (req, res) => {

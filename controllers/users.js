@@ -1,8 +1,20 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { itemError, ERROR_409, ERROR_401 } = require("../utils/errors");
+const {
+  DEFAULT_ERROR,
+  INVALID_DATA_ERROR,
+  NOTFOUND_ERROR,
+  CONFLICT_ERROR,
+} = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
+const {
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+} = require("../errors/errors");
 
 const updateCurrentUser = (req, res) => {
   const { name, avatar } = req.body;
@@ -14,23 +26,17 @@ const updateCurrentUser = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      if (!user) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "User not found" });
-      }
-
       res.send({ data: user });
     })
     .catch((error) => {
-      console.error(error);
       if (error.name === "ValidationError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid data provided" });
-      } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occurred on the server" });
+        res.status(INVALID_DATA_ERROR.error);
+        next(new badRequestError("Invalid data provided"));
       }
+
+      res
+        .status(DEFAULT_ERROR.error)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -40,11 +46,25 @@ const getCurrentUser = (req, res) => {
   User.findById(userId)
     .orFail()
     .then((user) => res.send({ data: user }))
-    .catch((e) => itemError(req, res, e));
+    .catch((error) => {
+      if (error.name === "CastError") {
+        res.status(INVALID_DATA_ERROR.error);
+        next(new badRequestError("Invalid user ID"));
+      } else {
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occurred on the server" });
+      }
+    });
 };
 
 const createUser = (req, res) => {
   const { email, password, name, avatar } = req.body;
+
+  if (!password) {
+    res.status(INVALID_DATA_ERROR.error);
+    next(new BadRequestError("Password is required"));
+  }
 
   bcrypt
     .hash(password, 10)
@@ -54,7 +74,19 @@ const createUser = (req, res) => {
 
       res.status(201).send({ data: userData });
     })
-    .catch((error) => itemError(req, res, error));
+    .catch((error) => {
+      if (error.name === "ValidationError") {
+        res.status(INVALID_DATA_ERROR.error);
+        next(new badRequestError("Invalid data provided"));
+      } else if (error.code === 11000) {
+        res.status(CONFLICT_ERROR.error);
+        next(new conflictError("Email already exists in database"));
+      }
+
+      res
+        .status(DEFAULT_ERROR.error)
+        .send({ message: "An error has occurred on the server" });
+    });
 };
 
 const login = (req, res) => {
@@ -69,7 +101,16 @@ const login = (req, res) => {
       res.send({ token, message: "The token is here" });
     })
 
-    .catch((error) => itemError(req, res, error));
+    .catch((err) => {
+      if (err.statusCode === 401) {
+        res.status(401);
+        next(new unauthorizedError("Email or Password not found"));
+      } else {
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "Internal server error" });
+      }
+    });
 };
 
 module.exports = {

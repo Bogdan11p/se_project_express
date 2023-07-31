@@ -4,6 +4,8 @@ const clothingItem = require("./clothingItem");
 const { ERROR_404 } = require("../utils/errors");
 const { login, createUser } = require("../controllers/users");
 const auth = require("../middlewares/auth");
+const express = require("express");
+const app = express();
 
 router.use("/items", clothingItem);
 router.use("/users", User);

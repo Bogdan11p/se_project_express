@@ -14,7 +14,7 @@ const {
   ConflictError,
 } = require("../errors/errors");
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
@@ -44,7 +44,7 @@ const getItems = (req, res) => {
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const itemId = req.params;
   const userId = req.user._id;
 
@@ -72,7 +72,7 @@ const deleteItem = (req, res) => {
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
@@ -99,7 +99,7 @@ const likeItem = (req, res) => {
     });
 };
 
-function dislikeItem(req, res) {
+function dislikeItem(req, res, next) {
   console.log(req.body);
   ClothingItem.findByIdAndUpdate(
     req.body._id,

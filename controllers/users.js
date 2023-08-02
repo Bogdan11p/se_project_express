@@ -16,7 +16,7 @@ const {
   ConflictError,
 } = require("../errors/errors");
 
-const updateCurrentUser = (req, res) => {
+const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
 
@@ -40,7 +40,7 @@ const updateCurrentUser = (req, res) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
 
   User.findById(userId)
@@ -49,7 +49,7 @@ const getCurrentUser = (req, res) => {
     .catch((error) => {
       if (error.name === "CastError") {
         res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid user ID"));
+        next(new BadRequestError("Invalid user ID"));
       } else {
         res
           .status(DEFAULT_ERROR.error)
@@ -58,7 +58,7 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { email, password, name, avatar } = req.body;
 
   if (!password) {
@@ -77,10 +77,10 @@ const createUser = (req, res) => {
     .catch((error) => {
       if (error.name === "ValidationError") {
         res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else if (error.code === 11000) {
         res.status(CONFLICT_ERROR.error);
-        next(new conflictError("Email already exists in database"));
+        next(new ConflictError("Email already exists in database"));
       }
 
       res
@@ -89,7 +89,7 @@ const createUser = (req, res) => {
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   console.log({ email, password });
 

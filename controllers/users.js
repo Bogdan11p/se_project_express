@@ -83,9 +83,7 @@ const createUser = (req, res, next) => {
         next(new ConflictError("Email already exists in database"));
       }
 
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occurred on the server" });
+      next(error);
     });
 };
 

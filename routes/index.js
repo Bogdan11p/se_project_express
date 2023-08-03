@@ -14,12 +14,12 @@ const {
 router.use("/items", clothingItem);
 router.use("/users", auth, User);
 
-router.get(`/crash-rest`, () => {
+/* router.get(`/crash-rest`, () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
   }, 0);
 });
-
+ */
 router.post("/signup", celebrate(validateUserBody), createUser);
 router.post("/signin", celebrate(validateUserAuthentication), login);
 

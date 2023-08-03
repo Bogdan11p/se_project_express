@@ -1,5 +1,5 @@
 const { Joi, celebrate } = require("celebrate");
-const { json } = require("express");
+
 const validator = require("validator");
 
 const validateURL = (value, helpers) => {
@@ -16,7 +16,7 @@ const validateEmail = (value, helpers) => {
   return helpers.error("string.email");
 };
 
-validateCardBody = celebrate({
+const validateCardBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30).messages({
       "string.min": 'The minimum length of the "name" field is 2',
@@ -31,7 +31,7 @@ validateCardBody = celebrate({
   }),
 });
 
-validateUserBody = celebrate({
+const validateUserBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30).messages({
       "string.min": 'The minimum length of the "name" field is 2',
@@ -55,7 +55,7 @@ validateUserBody = celebrate({
   }),
 });
 
-validateUserAuthentication = celebrate({
+const validateUserAuthentication = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(validateEmail).messages({
       "string.empty": `The "email" field must be filled in`,
@@ -68,10 +68,25 @@ validateUserAuthentication = celebrate({
   }),
 });
 
-validateUserAndItemsIds = celebrate({
+const validateUserAndItemsIds = celebrate({
   params: Joi.object().keys({
     itemId: Joi.alphanum().length(24),
     _id: Joi.alphanum().length(24),
+  }),
+});
+
+const validateUserAvatar = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30).messages({
+      "string.min": 'The minimum length of the "name" field is 2',
+      "string.max": 'The maximum length of the "name" field is 30',
+      "string.empty": 'The "name" field must be filled in',
+    }),
+
+    imageUrl: Joi.string().required().custom(validateURL).messages({
+      "string.empty": 'The "imageUrl" field must be filled in',
+      "string.uri": 'the "imageUrl" field must be a valid url',
+    }),
   }),
 });
 
@@ -80,4 +95,5 @@ module.exports = {
   validateUserBody,
   validateUserAuthentication,
   validateUserAndItemsIds,
+  validateUserAvatar,
 };

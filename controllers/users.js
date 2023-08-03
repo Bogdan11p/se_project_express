@@ -31,7 +31,7 @@ const updateCurrentUser = (req, res, next) => {
     .catch((error) => {
       if (error.name === "ValidationError") {
         res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       }
 
       res
@@ -62,7 +62,6 @@ const createUser = (req, res, next) => {
   const { email, password, name, avatar } = req.body;
 
   if (!password) {
-    res.status(INVALID_DATA_ERROR.error);
     next(new BadRequestError("Password is required"));
   }
 
@@ -76,10 +75,8 @@ const createUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status(INVALID_DATA_ERROR.error);
         next(new BadRequestError("Invalid data provided"));
       } else if (error.code === 11000) {
-        res.status(CONFLICT_ERROR.error);
         next(new ConflictError("Email already exists in database"));
       }
 

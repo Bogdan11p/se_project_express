@@ -14,14 +14,14 @@ const {
 router.use("/items", clothingItem);
 router.use("/users", auth, User);
 
-/* router.get(`/crash-rest`, () => {
+router.get(`/crash-rest`, () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
   }, 0);
 });
- */
-router.post("/signup", createUser);
-router.post("/signin", login);
+
+router.post("/signup", celebrate({ body: validateUserBody }), createUser);
+router.post("/signin", celebrate({ body: validateUserAuthentication }), login);
 
 router.use((req, res) => {
   res.status(NOTFOUND_ERROR.error).send({ message: "Router not found" });

@@ -44,12 +44,12 @@ const validateUserBody = celebrate({
       "string.uri": 'the "imageUrl" field must be a valid url',
     }),
 
-    email: Joi.string().required().email(validateEmail).messages({
+    email: Joi.string().required().email().messages({
       "string.empty": `The "email" field must be filled in`,
       "string.email": `The "email" field must have a valid email address`,
     }),
 
-    password: Joi.string().required().message({
+    password: Joi.string().required().messages({
       "string.empty": `The "password" field must be filled in`,
     }),
   }),
@@ -57,12 +57,12 @@ const validateUserBody = celebrate({
 
 const validateUserAuthentication = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().email(validateEmail).messages({
+    email: Joi.string().required().email().messages({
       "string.empty": `The "email" field must be filled in`,
       "string.email": `The "email" field must have a valid email address`,
     }),
 
-    password: Joi.string().required().message({
+    password: Joi.string().required().messages({
       "string.empty": `The "password" field must be filled in`,
     }),
   }),
@@ -70,8 +70,7 @@ const validateUserAuthentication = celebrate({
 
 const validateUserAndItemsIds = celebrate({
   params: Joi.object().keys({
-    itemId: Joi.alphanum().length(24),
-    _id: Joi.alphanum().length(24),
+    itemId: Joi.string().required().length(24).hex(),
   }),
 });
 

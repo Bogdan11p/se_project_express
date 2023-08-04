@@ -16,20 +16,20 @@ const {
   validateUserAndItemsIds,
 } = require("../middlewares/validation");
 
-router.post("/", auth, celebrate(validateCardBody), createItem);
+router.post("/", auth, createItem);
 router.get("/", getItems);
 router.put(
   "/:itemId/likes",
   auth,
-  celebrate(validateUserAndItemsIds),
+
   likeItem
 );
 
-router.delete("/:itemId", auth, celebrate(validateUserAndItemsIds), deleteItem);
+router.delete("/:itemId", auth, deleteItem);
 router.delete(
   "/:itemId/likes",
   auth,
-  celebrate(validateUserAndItemsIds),
+
   dislikeItem
 );
 

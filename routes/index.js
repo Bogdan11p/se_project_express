@@ -20,8 +20,8 @@ router.use("/users", auth, User);
   }, 0);
 });
  */
-router.post("/signup", celebrate(validateUserBody), createUser);
-router.post("/signin", celebrate(validateUserAuthentication), login);
+router.post("/signup", createUser);
+router.post("/signin", login);
 
 router.use((req, res) => {
   res.status(NOTFOUND_ERROR.error).send({ message: "Router not found" });

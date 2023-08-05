@@ -20,8 +20,8 @@ router.get(`/crash-rest`, () => {
   }, 0);
 });
 
-router.post("/signup", celebrate({ body: validateUserBody }), createUser);
-router.post("/signin", celebrate({ body: validateUserAuthentication }), login);
+router.post("/signup", validateUserBody, createUser);
+router.post("/signin", validateUserAuthentication, login);
 
 router.use((req, res) => {
   res.status(NOTFOUND_ERROR.error).send({ message: "Router not found" });

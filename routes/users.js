@@ -10,12 +10,7 @@ const {
 const auth = require("../middlewares/auth");
 
 router.get("/me", auth, getCurrentUser);
-router.patch(
-  "/me",
-  celebrate({ body: validateUserAvatar }),
-  auth,
-  updateCurrentUser
-);
+router.patch("/me", validateUserAvatar, auth, updateCurrentUser);
 //router.get("/", getUsers);
 
 module.exports = router;

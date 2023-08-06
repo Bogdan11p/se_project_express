@@ -1,13 +1,12 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 const BadRequestError = require("../errors/badRequestError");
 
 const ConflictError = require("../errors/conflictError");
 const UnauthorizedError = require("../errors/unauthorizedError");
-
-const { JWT_SECRET } = require("../utils/config");
 
 const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
@@ -75,9 +74,13 @@ const login = (req, res, next) => {
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === "production" ? JWT_SECRET : "dev-secret",
+        {
+          expiresIn: "7d",
+        }
+      );
       res.send({ token, message: "The token is here" });
     })
 

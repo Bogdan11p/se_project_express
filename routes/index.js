@@ -5,6 +5,8 @@ const clothingItem = require("./clothingItem");
 const { login, createUser } = require("../controllers/users");
 
 const NotFoundError = require("../errors/notFoundError");
+const User = require("./users");
+const auth = require("../middlewares/auth");
 
 const {
   validateUserBody,
@@ -12,6 +14,7 @@ const {
 } = require("../middlewares/validation");
 
 router.use("/items", clothingItem);
+router.use("/users", auth, User);
 
 router.get(`/crash-rest`, () => {
   setTimeout(() => {

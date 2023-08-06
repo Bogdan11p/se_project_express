@@ -33,7 +33,7 @@ const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
   const { _id: userId } = req.user;
 
-  ClothingItem.findOne({ _id: itemId })
+  ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
         next(new NotFoundError("item not found"));

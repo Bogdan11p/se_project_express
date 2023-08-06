@@ -1,18 +1,8 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  DEFAULT_ERROR,
-  INVALID_DATA_ERROR,
-  NOTFOUND_ERROR,
-  CONFLICT_ERROR,
-  FORBIDDEN_ERROR,
-} = require("../utils/errors");
-const {
-  BadRequestError,
-  UnauthorizedError,
-  ForbiddenError,
-  NotFoundError,
-  ConflictError,
-} = require("../errors/errors");
+
+const BadRequestError = require("../errors/badRequestError");
+const NotFoundError = require("../errors/notFoundError");
+const ForbiddenError = require("../errors/forbiddenError");
 
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
@@ -24,51 +14,51 @@ const createItem = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch(() => {
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occured on the server" });
+    .catch((error) => {
+      next(error);
     });
 };
 
 const deleteItem = (req, res, next) => {
-  const itemId = req.params;
-  const userId = req.user._id;
+  const { itemId } = req.params;
+  const { _id: userId } = req.user;
 
-  ClothingItem.findOne(itemId)
-    .orFail()
+  ClothingItem.findOne({ _id: itemId })
     .then((item) => {
-      console.log(item);
-      if (item.owner.equals(userId)) {
-        return item.remove(() => res.status(200).send({ item }));
+      if (!item) {
+        next(new NotFoundError("item not found"));
       }
 
-      return res
-        .status(ERROR_403)
-        .send({ message: "Not Authorized to delete" });
+      if (!item.owner.equals(userId)) {
+        next(
+          new ForbiddenError("Unauthorized: Only the card owner can delete it")
+        );
+      }
+
+      return ClothingItem.deleteOne({ _id: itemId, owner: userId })
+        .then(() => {
+          res.status(200).send({ message: "Item deleted successfully" });
+        })
+        .catch((error) => {
+          next(error);
+        });
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       }
 
-      return res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occurred on the server" });
+      return next(error);
     });
 };
 
@@ -81,7 +71,6 @@ const likeItem = (req, res, next) => {
     .orFail()
     .then((x) => {
       if (!x) {
-        res.status(NOTFOUND_ERROR.error);
         next(new NotFoundError("Item not found"));
       } else {
         res.status(200).send({ data: x });
@@ -89,28 +78,24 @@ const likeItem = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 };
 
 function dislikeItem(req, res, next) {
-  console.log(req.body);
+  console.log(req.user);
   ClothingItem.findByIdAndUpdate(
-    req.body._id,
+    req.params.itemId,
 
-    { $pull: { likes: req.body.user._id } },
+    { $pull: { likes: req.user._id } },
     { new: true }
   )
     .orFail()
     .then((x) => {
       if (!x) {
-        res.status(NOTFOUND_ERROR.error);
         next(new NotFoundError("Item not found"));
       } else {
         res.status(200).send({ data: x });
@@ -118,12 +103,9 @@ function dislikeItem(req, res, next) {
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 }

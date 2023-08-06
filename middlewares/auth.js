@@ -1,27 +1,28 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const { UNAUTHORIZED_ERROR } = require("../utils/errors");
+const UnauthorizedError = require("../errors/unauthorizedError");
+const ForbiddenError = require("../errors/forbiddenError");
 
-const handleAuthError = (res, e) => {
-  console.error(e);
-  res.status(UNAUTHORIZED_ERROR).send({ message: "Authorization Error" });
-};
-
-const extractBearerToken = (header) => header.replace("Bearer ", "");
-
-module.exports = (req, res, next) => {
+const handleAuthError = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return handleAuthError(res);
+    throw new UnauthorizedError("Unauthorized");
   }
-  const token = extractBearerToken(authorization);
+
+  const token = authorization.replace("Bearer ", "");
   let payload;
 
   try {
     payload = jwt.verify(token, JWT_SECRET);
-  } catch (e) {
-    return handleAuthError(res, e);
+  } catch (err) {
+    if (err.name === "JsonWebTokenError") {
+      throw new UnauthorizedError("Unauthorized: Token expired");
+    }
+    if (err.name === "TokenExpiredError") {
+      throw new UnauthorizedError("Unauthorized: Token expired");
+    }
+    throw new ForbiddenError("Forbidden Error");
   }
 
   req.user = payload;
@@ -29,4 +30,8 @@ module.exports = (req, res, next) => {
   next();
 
   return null;
+};
+
+module.exports = {
+  handleAuthError,
 };

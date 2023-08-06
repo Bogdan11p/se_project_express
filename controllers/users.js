@@ -1,20 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const {
-  DEFAULT_ERROR,
-  INVALID_DATA_ERROR,
-  NOTFOUND_ERROR,
-  CONFLICT_ERROR,
-} = require("../utils/errors");
+
+const BadRequestError = require("../errors/badRequestError");
+
+const ConflictError = require("../errors/conflictError");
+const UnauthorizedError = require("../errors/unauthorizedError");
+
 const { JWT_SECRET } = require("../utils/config");
-const {
-  BadRequestError,
-  UnauthorizedError,
-  ForbiddenError,
-  NotFoundError,
-  ConflictError,
-} = require("../errors/errors");
 
 const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
@@ -30,13 +23,10 @@ const updateCurrentUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status(INVALID_DATA_ERROR.error);
         next(new BadRequestError("Invalid data provided"));
       }
 
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occurred on the server" });
+      next(error);
     });
 };
 
@@ -48,12 +38,9 @@ const getCurrentUser = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
         next(new BadRequestError("Invalid user ID"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occurred on the server" });
+        next(error);
       }
     });
 };
@@ -69,9 +56,7 @@ const createUser = (req, res, next) => {
     .hash(password, 10)
     .then((hash) => User.create({ email, password: hash, name, avatar }))
     .then((user) => {
-      const userData = user.toObject();
-
-      res.status(201).send({ data: userData });
+      res.status(201).send({ name, avatar, _id: user._id, email: user.email });
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
@@ -96,14 +81,11 @@ const login = (req, res, next) => {
       res.send({ token, message: "The token is here" });
     })
 
-    .catch((err) => {
-      if (err.statusCode === 401) {
-        res.status(401);
-        next(new unauthorizedError("Email or Password not found"));
+    .catch((error) => {
+      if (error.message === "Incorrect email or password") {
+        next(new UnauthorizedError("Email or Password not found"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "Internal server error" });
+        next(error);
       }
     });
 };

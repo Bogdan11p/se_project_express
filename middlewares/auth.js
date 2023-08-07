@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+
 const { NODE_ENV, JWT_SECRET } = process.env;
 const UnauthorizedError = require("../errors/unauthorizedError");
 const ForbiddenError = require("../errors/forbiddenError");
@@ -14,7 +15,10 @@ const auth = (req, res, next) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, JWT_SECRET);
+    payload = jwt.verify(
+      token,
+      NODE_ENV === "production" ? JWT_SECRET : "dev-secret"
+    );
   } catch (err) {
     if (err.name === "JsonWebTokenError") {
       throw new UnauthorizedError("Unauthorized: Token expired");

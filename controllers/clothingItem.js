@@ -4,8 +4,6 @@ const BadRequestError = require("../errors/badRequestError");
 const NotFoundError = require("../errors/notFoundError");
 const ForbiddenError = require("../errors/forbiddenError");
 
-const { NODE_ENV, JWT_SECRET } = process.env;
-
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
@@ -88,7 +86,6 @@ const likeItem = (req, res, next) => {
 };
 
 function dislikeItem(req, res, next) {
-  console.log(req.user);
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
 

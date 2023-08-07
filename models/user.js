@@ -42,7 +42,6 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
   return this.findOne({ email })
     .select("+password")
     .then((endUser) => {
-      console.log(endUser);
       if (!endUser) {
         return Promise.reject(new Error("Incorrect email or password"));
       }

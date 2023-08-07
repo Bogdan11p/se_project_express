@@ -1,6 +1,9 @@
 const bcrypt = require("bcryptjs");
+
 const jwt = require("jsonwebtoken");
+
 const User = require("../models/user");
+
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 const BadRequestError = require("../errors/badRequestError");
@@ -70,7 +73,6 @@ const createUser = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  console.log({ email, password });
 
   User.findUserByCredentials(email, password)
     .then((user) => {

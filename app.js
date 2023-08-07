@@ -11,9 +11,7 @@ const { errorHandler } = require("./middlewares/errorHandling");
 
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
-mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db", (r) => {
-  console.log("connected to DB", r);
-});
+mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 
 const routes = require("./routes");
 
@@ -29,7 +27,4 @@ app.use(errors());
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is listening on ${PORT}`);
-  console.log("This is working");
-});
+app.listen(PORT, () => {});
